@@ -1,15 +1,33 @@
-import type { ReactNode } from "react";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import DashboardShell from "@/components/dashboard/DashboardShell";
 
-/**
- * Dashboard layout — wraps all protected pages.
- * Will include Sidebar + TopNavbar in Phase 3.
- */
-export default function DashboardLayout({ children }: { children: ReactNode }) {
+export default async function DashboardLayout({
+    children,
+}: {
+    children: React.ReactNode;
+}) {
+    const supabase = await createClient();
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) redirect("/login");
+
+    // STEP 5: App checks role from profiles table
+    const { data: profile } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+
+    // STEP 6: Pass role down — sidebar and components react to it
     return (
-        <div className="km-page">
-            {/* Sidebar will be added in Phase 3 */}
-            {/* TopNavbar will be added in Phase 3 */}
-            <main>{children}</main>
-        </div>
+        <DashboardShell
+            userRole={profile?.role}
+            userName={profile?.full_name || user.email?.split("@")[0] || "User"}
+        >
+            {children}
+        </DashboardShell>
     );
 }
