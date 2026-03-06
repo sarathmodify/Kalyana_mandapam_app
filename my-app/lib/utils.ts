@@ -56,3 +56,30 @@ export function truncate(text: string, length: number = 50): string {
     if (text.length <= length) return text;
     return text.slice(0, length) + "…";
 }
+
+/**
+ * Export an array of objects as a CSV file download.
+ */
+export function exportToCSV(
+    data: Record<string, unknown>[],
+    filename: string
+): void {
+    if (data.length === 0) return;
+    const headers = Object.keys(data[0]).join(",");
+    const rows = data.map((row) =>
+        Object.values(row)
+            .map((val) => {
+                const str = String(val ?? "");
+                return str.includes(",") ? `"${str}"` : str;
+            })
+            .join(",")
+    );
+    const csv = [headers, ...rows].join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${filename}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+}

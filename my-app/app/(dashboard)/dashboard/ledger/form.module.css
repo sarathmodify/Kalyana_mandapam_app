@@ -1,0 +1,212 @@
+.page {
+    max-width: 720px;
+    animation: fadeIn 0.3s ease;
+}
+
+.backLink {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    text-decoration: none;
+    margin-bottom: var(--space-4);
+    transition: color 0.15s;
+}
+
+.backLink:hover {
+    color: var(--color-primary);
+}
+
+.header {
+    margin-bottom: var(--space-6);
+}
+
+.header h2 {
+    font-family: var(--font-heading);
+    font-size: var(--text-2xl);
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin-bottom: var(--space-1);
+}
+
+.header p {
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+}
+
+.card {
+    background: var(--color-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-card);
+    padding: var(--space-8);
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+}
+
+.row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-5);
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+}
+
+.fullWidth {
+    grid-column: 1 / -1;
+}
+
+/* Type Toggle */
+.typeToggle {
+    display: flex;
+    gap: 0;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    border: 1.5px solid var(--color-border);
+}
+
+.typeOption {
+    flex: 1;
+    padding: var(--space-3);
+    border: none;
+    background: var(--color-bg);
+    color: var(--color-text-muted);
+    font-family: var(--font-body);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    transition: all 0.2s;
+}
+
+.typeOption:first-child {
+    border-right: 1px solid var(--color-border);
+}
+
+.typeIncome {
+    background: #F0FDF4;
+    color: #16A34A;
+    font-weight: 600;
+    border-color: #16A34A;
+}
+
+.typeExpense {
+    background: #FEF2F2;
+    color: #EF4444;
+    font-weight: 600;
+    border-color: #EF4444;
+}
+
+.typeOption:hover:not(.typeIncome):not(.typeExpense) {
+    background: var(--color-card);
+    color: var(--color-text-secondary);
+}
+
+/* Select */
+.select {
+    width: 100%;
+    padding: var(--space-3) var(--space-4);
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-md);
+    font-family: var(--font-body);
+    font-size: var(--text-sm);
+    color: var(--color-text-primary);
+    background: var(--color-card);
+    outline: none;
+    transition: border-color 0.15s;
+    cursor: pointer;
+    appearance: auto;
+}
+
+.select:focus {
+    border-color: #1E40AF;
+}
+
+/* Textarea */
+.textarea {
+    width: 100%;
+    padding: var(--space-3) var(--space-4);
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-md);
+    font-family: var(--font-body);
+    font-size: var(--text-sm);
+    color: var(--color-text-primary);
+    background: var(--color-card);
+    outline: none;
+    resize: vertical;
+    min-height: 80px;
+    transition: border-color 0.15s;
+}
+
+.textarea:focus {
+    border-color: #1E40AF;
+}
+
+/* Actions */
+.formActions {
+    display: flex;
+    gap: var(--space-3);
+    justify-content: flex-end;
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--color-border);
+}
+
+.submitBtn {
+    min-width: 160px;
+    justify-content: center;
+}
+
+.spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Error */
+.error {
+    background: #FEF2F2;
+    color: #EF4444;
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-md);
+    font-size: var(--text-sm);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 640px) {
+    .row {
+        grid-template-columns: 1fr;
+    }
+}
