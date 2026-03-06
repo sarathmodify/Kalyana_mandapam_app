@@ -1,0 +1,29 @@
+export type LedgerType = "income" | "expense";
+export type PaymentMethod = "cash" | "bank_transfer" | "upi" | "cheque" | "other";
+
+export interface LedgerEntry {
+    id: string;
+    date: string;
+    description: string;
+    amount: number;
+    type: LedgerType;
+    category?: string;
+    payment_method?: PaymentMethod;
+    reference_no?: string;
+    booking_id?: string;
+    notes?: string;
+    created_by?: string;
+    updated_by?: string;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface LedgerAuditLog {
+    id: string;
+    entry_id: string;
+    action: "create" | "update" | "delete";
+    changed_by?: string;
+    changed_at: string;
+    old_data?: Record<string, unknown>;
+    new_data?: Record<string, unknown>;
+}
