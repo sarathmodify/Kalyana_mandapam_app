@@ -84,21 +84,33 @@ export default function ReportsPage() {
     const { isAdmin } = useRole();
     const [entries, setEntries] = useState<LedgerEntry[]>([]);
     const [loading, setLoading] = useState(true);
+    const [fetchError, setFetchError] = useState<string | null>(null);
     const [period, setPeriod] = useState<Period>("monthly");
-
-    const supabase = createClient();
 
     const fetchEntries = useCallback(async () => {
         setLoading(true);
-        const { from, to } = getPeriodDates(period);
-        let query = supabase.from("ledger_entries").select("*").order("date", { ascending: true });
-        if (from) query = query.gte("date", from);
-        if (to) query = query.lte("date", to);
-        const { data, error } = await query;
-        console.log(data, "data")
-        if (!error && data) setEntries(data as LedgerEntry[]);
-        setLoading(false);
-    }, [period]); // eslint-disable-line react-hooks/exhaustive-deps
+        setFetchError(null);
+        try {
+            const supabase = createClient();
+            const { from, to } = getPeriodDates(period);
+            let query = supabase
+                .from("ledger_entries")
+                .select("*")
+                .order("date", { ascending: true });
+            if (from) query = query.gte("date", from);
+            if (to) query = query.lte("date", to);
+            const { data, error } = await query;
+            if (error) {
+                setFetchError(error.message);
+            } else if (data) {
+                setEntries(data as LedgerEntry[]);
+            }
+        } catch (e) {
+            setFetchError(e instanceof Error ? e.message : "Unexpected error fetching report data.");
+        } finally {
+            setLoading(false);
+        }
+    }, [period]);
 
     useEffect(() => {
         fetchEntries();
@@ -193,6 +205,15 @@ export default function ReportsPage() {
                 <div className={styles.loadingWrap}>
                     <Loader2 size={32} className={styles.spinner} color="#1E40AF" />
                     <p>Loading report data…</p>
+                </div>
+            ) : fetchError ? (
+                <div className={styles.errorWrap}>
+                    <div className={styles.errorIcon}>⚠️</div>
+                    <h3>Failed to load report data</h3>
+                    <p className={styles.errorMsg}>{fetchError}</p>
+                    <button className="km-btn-primary" onClick={fetchEntries}>
+                        Retry
+                    </button>
                 </div>
             ) : (
                 <>
