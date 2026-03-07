@@ -92,7 +92,7 @@ export default function EditBookingPage({
                 .neq("id", id);
 
             if (data && data.length > 0) {
-                const names = data.map((b) => b.customer_name).join(", ");
+                const names = data.map((b: { customer_name: string }) => b.customer_name).join(", ");
                 setDateConflict(`This date already has ${data.length} booking(s): ${names}`);
             } else {
                 setDateConflict(null);
