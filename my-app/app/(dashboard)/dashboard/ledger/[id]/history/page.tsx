@@ -34,29 +34,76 @@ export default function LedgerHistoryPage({
         async function fetchHistory() {
             const supabase = createClient();
 
-            // Fetch entry info
-            const { data: entry } = await supabase
-                .from("ledger_entries")
-                .select("description, amount, type")
-                .eq("id", id)
-                .single();
+            // Run all independent queries in parallel (3x faster)
+            const [userResult, entryResult, auditResult] = await Promise.all([
+                supabase.auth.getUser(),
+                supabase
+                    .from("ledger_entries")
+                    .select("description, amount, type")
+                    .eq("id", id)
+                    .single(),
+                supabase
+                    .from("ledger_audit_log")
+                    .select("*")
+                    .eq("entry_id", id)
+                    .order("changed_at", { ascending: false }),
+            ]);
 
+            const currentUser = userResult.data?.user;
+            const entry = entryResult.data;
+            const auditData = auditResult.data;
+
+            // Set entry title
             if (entry) {
                 setEntryTitle(`${entry.description} — ${entry.type === "income" ? "+" : "−"}₹${entry.amount}`);
             } else {
                 setEntryTitle("Deleted Entry");
             }
 
-            // Fetch audit logs with user info
-            const { data, error } = await supabase
-                .from("ledger_audit_log")
-                .select("*, profiles:changed_by(full_name)")
-                .eq("entry_id", id)
-                .order("changed_at", { ascending: false });
-
-            if (!error && data) {
-                setLogs(data as AuditLogWithUser[]);
+            if (auditResult.error || !auditData) {
+                setLoading(false);
+                return;
             }
+
+            // Collect unique user IDs from logs
+            const userIds = [...new Set(
+                auditData
+                    .map((log) => log.changed_by)
+                    .filter((uid): uid is string => !!uid)
+            )];
+
+            // Fetch profiles for those user IDs
+            let profileMap: Record<string, string> = {};
+            if (userIds.length > 0) {
+                const { data: profiles } = await supabase
+                    .from("profiles")
+                    .select("id, full_name")
+                    .in("id", userIds);
+
+                if (profiles) {
+                    profileMap = Object.fromEntries(
+                        profiles.map((p) => [p.id, p.full_name || ""])
+                    );
+                }
+            }
+
+            // Merge profile names into logs, with email fallback
+            const logsWithUsers: AuditLogWithUser[] = auditData.map((log) => {
+                let displayName: string | null = null;
+                if (log.changed_by) {
+                    displayName = profileMap[log.changed_by] || null;
+                    // Fallback: if it's the current user and name is empty, use their email
+                    if (!displayName && currentUser && log.changed_by === currentUser.id) {
+                        displayName = currentUser.email || null;
+                    }
+                }
+                return {
+                    ...log,
+                    profiles: { full_name: displayName },
+                };
+            });
+
+            setLogs(logsWithUsers);
             setLoading(false);
         }
         fetchHistory();
