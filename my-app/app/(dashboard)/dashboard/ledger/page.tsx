@@ -90,10 +90,47 @@ export default function LedgerPage() {
     const handleDelete = async () => {
         if (!deleteId) return;
         setDeleting(true);
-        await supabase.from("ledger_entries").delete().eq("id", deleteId);
-        setDeleteId(null);
-        setDeleting(false);
-        fetchEntries();
+        try {
+            // Step 1: Fetch the entry data before deleting (for the audit log)
+            const { data: entryData } = await supabase
+                .from("ledger_entries")
+                .select("*")
+                .eq("id", deleteId)
+                .single();
+
+            // Step 2: Insert audit log row BEFORE deleting (while entry_id still exists)
+            if (entryData) {
+                const { data: userData } = await supabase.auth.getUser();
+                await supabase.from("ledger_audit_log").insert({
+                    entry_id: deleteId,
+                    action: "delete" as const,
+                    changed_by: userData?.user?.id || null,
+                    old_data: entryData,
+                    new_data: null,
+                });
+            }
+
+            // Step 3: Delete the entry
+            const { error } = await supabase
+                .from("ledger_entries")
+                .delete()
+                .eq("id", deleteId)
+                .abortSignal(AbortSignal.timeout(10000));
+
+            if (error) {
+                console.error("Delete failed:", error.message);
+                alert("Failed to delete entry: " + error.message);
+                return;
+            }
+
+            setDeleteId(null);
+            fetchEntries();
+        } catch (err) {
+            console.error("Delete error:", err);
+            alert("Failed to delete entry. Please try again.");
+        } finally {
+            setDeleting(false);
+        }
     };
 
     const handleExport = () => {

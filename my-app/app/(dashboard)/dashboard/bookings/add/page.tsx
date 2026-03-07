@@ -52,7 +52,7 @@ export default function AddBookingPage() {
                 .neq("status", "cancelled");
 
             if (data && data.length > 0) {
-                const names = data.map((b) => b.customer_name).join(", ");
+                const names = data.map((b: { customer_name: string }) => b.customer_name).join(", ");
                 setDateConflict(`This date already has ${data.length} booking(s): ${names}`);
             } else {
                 setDateConflict(null);
@@ -102,7 +102,6 @@ export default function AddBookingPage() {
             status: formData.status,
             notes: formData.notes || null,
             created_by: user?.id,
-            updated_by: user?.id,
         });
 
         if (insertError) {
