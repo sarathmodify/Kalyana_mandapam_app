@@ -214,6 +214,11 @@
     background: #FEF2F2;
 }
 
+.historyBtn:hover {
+    color: #7C3AED;
+    background: #F5F3FF;
+}
+
 /* Empty State */
 .emptyState {
     padding: var(--space-16) var(--space-6);

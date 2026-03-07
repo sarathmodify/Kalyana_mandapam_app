@@ -291,8 +291,8 @@ export default function BookingsPage() {
                                                         </select>
                                                     ) : (
                                                         <span className={`km-badge ${booking.status === "confirmed" ? "km-badge-success"
-                                                                : booking.status === "tentative" ? "km-badge-warning"
-                                                                    : "km-badge-error"
+                                                            : booking.status === "tentative" ? "km-badge-warning"
+                                                                : "km-badge-error"
                                                             }`}>
                                                             {booking.status}
                                                         </span>
@@ -301,10 +301,17 @@ export default function BookingsPage() {
                                                 {isAdmin && (
                                                     <td>
                                                         <div className={styles.actions}>
+                                                            <Link
+                                                                href={`/dashboard/bookings/edit/${booking.id}`}
+                                                                className={`${styles.actionBtn} ${styles.editBtn}`}
+                                                                title="Edit"
+                                                            >
+                                                                <Pencil size={16} />
+                                                            </Link>
                                                             <button
                                                                 className={`${styles.actionBtn} ${styles.deleteBtn}`}
                                                                 onClick={() => setDeleteId(booking.id)}
-                                                                title="Cancel Booking"
+                                                                title="Delete"
                                                             >
                                                                 <Trash2 size={16} />
                                                             </button>
@@ -368,8 +375,8 @@ export default function BookingsPage() {
                                         <div
                                             key={b.id}
                                             className={`${styles.calendarEvent} ${b.status === "confirmed" ? styles.eventConfirmed
-                                                    : b.status === "tentative" ? styles.eventTentative
-                                                        : styles.eventCancelled
+                                                : b.status === "tentative" ? styles.eventTentative
+                                                    : styles.eventCancelled
                                                 }`}
                                             title={`${b.customer_name} — ${b.event_type || "Event"} (${b.status})`}
                                         >

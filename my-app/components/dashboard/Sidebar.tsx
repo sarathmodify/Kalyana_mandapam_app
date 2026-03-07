@@ -46,11 +46,22 @@ export default function Sidebar({ userRole, userName }: SidebarProps) {
     };
 
     const handleLogout = async () => {
-        const supabase = createClient();
-        await supabase.auth.signOut();
-        router.push("/login");
-        router.refresh();
+        try {
+            const supabase = createClient();
+            console.log("logout");
+            await supabase.auth.signOut();
+            console.log("logout1");
+        } catch (err) {
+            // Log but don't block — still redirect
+            console.error("SignOut error:", err);
+        } finally {
+            // ✅ ALWAYS redirect to login, even if signOut fails
+            // (session is invalid at this point regardless)
+            router.push("/login");
+            router.refresh();
+        }
     };
+
 
     return (
         <aside className={`${styles.sidebar} ${collapsed ? styles.sidebarCollapsed : ""}`}>

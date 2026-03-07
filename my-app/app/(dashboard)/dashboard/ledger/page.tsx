@@ -19,6 +19,7 @@ import {
     BookOpen,
     Search,
     X,
+    History,
 } from "lucide-react";
 import styles from "./ledger.module.css";
 
@@ -285,6 +286,13 @@ export default function LedgerPage() {
                                                         title="Edit"
                                                     >
                                                         <Pencil size={16} />
+                                                    </Link>
+                                                    <Link
+                                                        href={`/dashboard/ledger/${entry.id}/history`}
+                                                        className={`${styles.actionBtn} ${styles.historyBtn}`}
+                                                        title="View History"
+                                                    >
+                                                        <History size={16} />
                                                     </Link>
                                                     <button
                                                         className={`${styles.actionBtn} ${styles.deleteBtn}`}
