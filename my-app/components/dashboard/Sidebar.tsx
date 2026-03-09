@@ -48,15 +48,12 @@ export default function Sidebar({ userRole, userName }: SidebarProps) {
     const handleLogout = async () => {
         try {
             const supabase = createClient();
-            console.log("logout");
-            await supabase.auth.signOut();
-            console.log("logout1");
+            // 'local' clears only the browser session — no server round-trip
+            // This is why signOut() was hanging — it was waiting for a server response
+            await supabase.auth.signOut({ scope: 'local' });
         } catch (err) {
-            // Log but don't block — still redirect
             console.error("SignOut error:", err);
         } finally {
-            // ✅ ALWAYS redirect to login, even if signOut fails
-            // (session is invalid at this point regardless)
             router.push("/login");
             router.refresh();
         }

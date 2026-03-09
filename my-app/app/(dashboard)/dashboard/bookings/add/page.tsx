@@ -121,6 +121,8 @@ export default function AddBookingPage() {
         );
     }
 
+    console.log(roleLoading, 'roleloading')
+
     return (
         <div className={styles.page}>
             <Link href="/dashboard/bookings" className={styles.backLink}>

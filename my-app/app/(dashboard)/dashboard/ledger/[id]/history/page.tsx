@@ -68,8 +68,8 @@ export default function LedgerHistoryPage({
             // Collect unique user IDs from logs
             const userIds = [...new Set(
                 auditData
-                    .map((log) => log.changed_by)
-                    .filter((uid): uid is string => !!uid)
+                    .map((log: { changed_by: string | null }) => log.changed_by)
+                    .filter((uid: string | null): uid is string => !!uid)
             )];
 
             // Fetch profiles for those user IDs
@@ -82,16 +82,16 @@ export default function LedgerHistoryPage({
 
                 if (profiles) {
                     profileMap = Object.fromEntries(
-                        profiles.map((p) => [p.id, p.full_name || ""])
+                        profiles.map((p: { id: string; full_name: string | null }) => [p.id, p.full_name || ""])
                     );
                 }
             }
 
             // Merge profile names into logs, with email fallback
-            const logsWithUsers: AuditLogWithUser[] = auditData.map((log) => {
+            const logsWithUsers: AuditLogWithUser[] = auditData.map((log: Record<string, unknown>) => {
                 let displayName: string | null = null;
                 if (log.changed_by) {
-                    displayName = profileMap[log.changed_by] || null;
+                    displayName = profileMap[log.changed_by as string] || null;
                     // Fallback: if it's the current user and name is empty, use their email
                     if (!displayName && currentUser && log.changed_by === currentUser.id) {
                         displayName = currentUser.email || null;
