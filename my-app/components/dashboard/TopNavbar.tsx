@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Search } from "lucide-react";
+
 import { usePathname } from "next/navigation";
 import styles from "./TopNavbar.module.css";
 
@@ -32,19 +32,6 @@ export default function TopNavbar({ userName, userRole }: TopNavbarProps) {
             </div>
 
             <div className={styles.right}>
-                <div className={styles.search}>
-                    <Search size={16} className={styles.searchIcon} />
-                    <input
-                        type="text"
-                        placeholder="Search..."
-                        className={styles.searchInput}
-                    />
-                </div>
-
-                <button className={styles.notification} title="Notifications">
-                    <Bell size={20} />
-                    <span className={styles.notificationDot}></span>
-                </button>
 
                 <div className={styles.user}>
                     <div className={styles.userAvatar}>
