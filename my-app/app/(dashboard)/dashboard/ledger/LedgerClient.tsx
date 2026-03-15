@@ -112,8 +112,7 @@ export default function LedgerClient({ initialEntries, isAdmin }: LedgerClientPr
             const { error } = await supabase
                 .from("ledger_entries")
                 .delete()
-                .eq("id", deleteId)
-                .abortSignal(AbortSignal.timeout(10000));
+                .eq("id", deleteId);
 
             if (error) {
                 console.error("Delete failed:", error.message);
@@ -154,11 +153,13 @@ export default function LedgerClient({ initialEntries, isAdmin }: LedgerClientPr
                     <p>Track all income and expenses</p>
                 </div>
                 <div className={styles.headerActions}>
+                    {/* TODO: Export CSV — hidden for now
                     {isAdmin && (
                         <button className="km-btn-outline" onClick={handleExport}>
                             <Download size={16} /> Export CSV
                         </button>
                     )}
+                    */}
                     {isAdmin && (
                         <Link href="/dashboard/ledger/add" className="km-btn-primary">
                             <Plus size={16} /> Add Entry

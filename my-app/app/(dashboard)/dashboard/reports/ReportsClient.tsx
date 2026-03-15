@@ -116,11 +116,13 @@ export default function ReportsClient({ initialEntries, isAdmin }: ReportsClient
                     <p>Financial performance overview and analytics</p>
                 </div>
                 <div className={styles.headerActions}>
+                    {/* TODO: Export CSV — hidden for now
                     {isAdmin && (
                         <button className="km-btn-outline" onClick={handleExport}>
                             <Download size={16} /> Export CSV
                         </button>
                     )}
+                    */}
                 </div>
             </div>
 
