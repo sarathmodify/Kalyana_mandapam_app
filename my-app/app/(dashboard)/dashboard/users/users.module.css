@@ -347,4 +347,30 @@
     .summaryRow {
         flex-direction: column;
     }
+
+    .header {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 480px) {
+    .summaryCard {
+        padding: var(--space-4);
+    }
+
+    .summaryValue {
+        font-size: var(--text-xl);
+    }
+
+    .infoBanner {
+        font-size: var(--text-xs);
+        padding: var(--space-3) var(--space-4);
+    }
+
+    .tableHeader {
+        flex-direction: column;
+        gap: var(--space-2);
+        align-items: flex-start;
+        padding: var(--space-4);
+    }
 }

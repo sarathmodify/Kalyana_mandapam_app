@@ -209,4 +209,22 @@
     .row {
         grid-template-columns: 1fr;
     }
+
+    .card {
+        padding: var(--space-5);
+    }
+
+    .formActions {
+        flex-direction: column-reverse;
+    }
+
+    .formActions a,
+    .formActions button {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .submitBtn {
+        min-width: 0;
+    }
 }

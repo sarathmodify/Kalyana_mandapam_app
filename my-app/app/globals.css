@@ -127,6 +127,55 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* ── Cross-Browser & Mobile Fixes ────────────────────────────── */
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+/* Touch-friendly inputs for iOS/Android */
+input,
+select,
+textarea,
+button {
+  font-family: inherit;
+  font-size: inherit;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+select {
+  -webkit-appearance: menulist;
+  -moz-appearance: menulist;
+  appearance: menulist;
+}
+
+input[type="date"] {
+  -webkit-appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+/* Minimum touch target size (44px per WCAG) */
+@media (pointer: coarse) {
+
+  input,
+  select,
+  textarea,
+  button,
+  a {
+    min-height: 44px;
+  }
+}
+
+/* Smooth scroll on iOS for overflow containers */
+[style*="overflow"],
+.tableScroll {
+  -webkit-overflow-scrolling: touch;
 }
 
 /* ── Typography Defaults ──────────────────────────────────────── */

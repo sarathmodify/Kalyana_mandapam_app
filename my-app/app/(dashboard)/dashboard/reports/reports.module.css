@@ -416,9 +416,43 @@
     }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
     .page {
         padding: var(--space-4);
+        gap: var(--space-4);
+    }
+
+    .statsGrid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--space-3);
+    }
+
+    .statCard {
+        padding: var(--space-4);
+        gap: var(--space-3);
+    }
+
+    .statIcon {
+        width: 40px;
+        height: 40px;
+    }
+
+    .statValue {
+        font-size: var(--text-lg);
+    }
+
+    .chartCard {
+        padding: var(--space-4);
+    }
+
+    .tableHeader {
+        padding: var(--space-4);
+    }
+}
+
+@media (max-width: 640px) {
+    .page {
+        padding: var(--space-3);
     }
 
     .statsGrid {
@@ -437,5 +471,15 @@
     .periodToggle {
         width: 100%;
         justify-content: space-between;
+    }
+
+    .chartHeader {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-2);
+    }
+
+    .statValue {
+        font-size: var(--text-base);
     }
 }
