@@ -29,3 +29,9 @@
         padding: var(--space-4);
     }
 }
+
+@media (max-width: 580px) {
+    .content {
+        padding: var(--space-3);
+    }
+}

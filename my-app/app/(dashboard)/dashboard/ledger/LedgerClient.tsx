@@ -174,7 +174,7 @@ export default function LedgerClient({ initialEntries, isAdmin }: LedgerClientPr
                     <div className={styles.summaryIcon} style={{ background: "#F0FDF4" }}>
                         <TrendingUp size={20} color="#16A34A" />
                     </div>
-                    <div>
+                    <div className={styles.summaryInfo}>
                         <div className={styles.summaryLabel}>Income</div>
                         <div className={styles.summaryValue} style={{ color: "#16A34A" }}>
                             {formatCurrency(totalIncome)}
@@ -185,7 +185,7 @@ export default function LedgerClient({ initialEntries, isAdmin }: LedgerClientPr
                     <div className={styles.summaryIcon} style={{ background: "#FEF2F2" }}>
                         <TrendingDown size={20} color="#EF4444" />
                     </div>
-                    <div>
+                    <div className={styles.summaryInfo}>
                         <div className={styles.summaryLabel}>Expenses</div>
                         <div className={styles.summaryValue} style={{ color: "#EF4444" }}>
                             {formatCurrency(totalExpenses)}
@@ -196,7 +196,7 @@ export default function LedgerClient({ initialEntries, isAdmin }: LedgerClientPr
                     <div className={styles.summaryIcon} style={{ background: "#EFF6FF" }}>
                         <Wallet size={20} color="#1E40AF" />
                     </div>
-                    <div>
+                    <div className={styles.summaryInfo}>
                         <div className={styles.summaryLabel}>Net Balance</div>
                         <div className={styles.summaryValue} style={{ color: netBalance >= 0 ? "#1E40AF" : "#EF4444" }}>
                             {formatCurrency(netBalance)}
