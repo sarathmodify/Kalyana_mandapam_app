@@ -13,11 +13,8 @@ const PAGE_TITLES: Record<string, string> = {
     "/dashboard": "Dashboard Overview",
     "/dashboard/ledger": "Ledger",
     "/dashboard/ledger/add": "Add Ledger Entry",
-    "/dashboard/bookings": "Bookings",
-    "/dashboard/bookings/add": "Add Booking",
     "/dashboard/reports": "Reports",
     "/dashboard/users": "User Management",
-    "/dashboard/inquiries": "Inquiries",
 };
 
 export default function TopNavbar({ userName, userRole }: TopNavbarProps) {

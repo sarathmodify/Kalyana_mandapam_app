@@ -30,39 +30,11 @@ export const PAYMENT_METHODS = [
     { value: "other", label: "Other" },
 ];
 
-// ── Event Types ─────────────────────────────────────────────────
-export const EVENT_TYPES = [
-    "Wedding",
-    "Reception",
-    "Engagement",
-    "Birthday",
-    "Corporate",
-    "Other",
-];
-
-// ── Booking Statuses ────────────────────────────────────────────
-export const BOOKING_STATUSES = [
-    { value: "confirmed", label: "Confirmed", color: "success" },
-    { value: "tentative", label: "Tentative", color: "warning" },
-    { value: "cancelled", label: "Cancelled", color: "error" },
-];
-
-// ── Public Navigation Links ─────────────────────────────────────
-export const PUBLIC_NAV_LINKS = [
-    { href: "/", label: "Home" },
-    { href: "/about", label: "About" },
-    { href: "/facilities", label: "Facilities" },
-    { href: "/gallery", label: "Gallery" },
-    { href: "/contact", label: "Contact" },
-];
-
 // ── Dashboard Sidebar Links ─────────────────────────────────────
 export const DASHBOARD_NAV_LINKS = [
     { href: "/dashboard", label: "Overview", icon: "LayoutDashboard" },
     { href: "/dashboard/ledger", label: "Ledger", icon: "BookOpen" },
-    { href: "/dashboard/bookings", label: "Bookings", icon: "Calendar" },
     { href: "/dashboard/reports", label: "Reports", icon: "BarChart3" },
-    { href: "/dashboard/inquiries", label: "Inquiries", icon: "MessageSquare" },
 ];
 
 // Admin-only link
@@ -80,3 +52,4 @@ export const HALL_INFO = {
     capacity: 1000,
     foundedYear: 1995,
 };
+

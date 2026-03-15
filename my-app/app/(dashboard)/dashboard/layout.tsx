@@ -13,19 +13,15 @@ export default async function DashboardLayout({
     } = await supabase.auth.getUser();
 
 
-
     if (!user) redirect("/login");
 
-    // STEP 5: App checks role from profiles table
+    // Fetch user profile for role-based access
     const { data: profile } = await supabase
         .from("profiles")
         .select("*")
         .eq("id", user.id)
         .single();
 
-    console.log(profile, "profilerole");
-
-    // STEP 6: Pass role down — sidebar and components react to it
     return (
         <DashboardShell
             userRole={profile?.role}

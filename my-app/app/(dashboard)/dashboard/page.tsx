@@ -4,38 +4,25 @@ import {
     TrendingUp,
     TrendingDown,
     Wallet,
-    CalendarCheck,
+    FileText,
 } from "lucide-react";
 
 export default async function DashboardPage() {
     const supabase = await createClient();
 
-    // Fetch all data in parallel (4x faster than sequential)
+    // Fetch all ledger data in parallel
     const [
         { data: ledgerEntries },
-        { data: upcomingBookings },
         { data: recentLedger },
-        { data: recentBookings },
     ] = await Promise.all([
         supabase
             .from("ledger_entries")
             .select("amount, type"),
         supabase
-            .from("bookings")
-            .select("*")
-            .eq("status", "confirmed")
-            .gte("event_date", new Date().toISOString().split("T")[0])
-            .order("event_date", { ascending: true }),
-        supabase
             .from("ledger_entries")
             .select("*")
             .order("date", { ascending: false })
-            .limit(5),
-        supabase
-            .from("bookings")
-            .select("*")
-            .order("event_date", { ascending: true })
-            .limit(5),
+            .limit(10),
     ]);
 
     // Calculate totals
@@ -50,7 +37,7 @@ export default async function DashboardPage() {
             .reduce((sum, e) => sum + Number(e.amount), 0) || 0;
 
     const netBalance = totalIncome - totalExpenses;
-    const upcomingCount = upcomingBookings?.length || 0;
+    const totalEntries = ledgerEntries?.length || 0;
 
     const stats = [
         {
@@ -75,9 +62,9 @@ export default async function DashboardPage() {
             bg: "#EFF6FF",
         },
         {
-            label: "Upcoming Bookings",
-            value: upcomingCount.toString(),
-            icon: CalendarCheck,
+            label: "Total Entries",
+            value: totalEntries.toString(),
+            icon: FileText,
             color: "#9333EA",
             bg: "#FAF5FF",
         },
@@ -111,9 +98,8 @@ export default async function DashboardPage() {
                 })}
             </div>
 
-            {/* Recent Data Section */}
-            <div className="recent-grid">
-                {/* Recent Ledger Entries */}
+            {/* Recent Ledger Entries */}
+            <div className="recent-section">
                 <div className="recent-card">
                     <div className="recent-header">
                         <h3>Recent Ledger Entries</h3>
@@ -127,6 +113,7 @@ export default async function DashboardPage() {
                                 <tr>
                                     <th>Date</th>
                                     <th>Description</th>
+                                    <th>Category</th>
                                     <th>Amount</th>
                                     <th>Type</th>
                                 </tr>
@@ -136,6 +123,7 @@ export default async function DashboardPage() {
                                     <tr key={entry.id}>
                                         <td>{formatDate(entry.date)}</td>
                                         <td>{entry.description}</td>
+                                        <td>{entry.category || "—"}</td>
                                         <td>{formatCurrency(Number(entry.amount))}</td>
                                         <td>
                                             <span
@@ -151,53 +139,6 @@ export default async function DashboardPage() {
                     ) : (
                         <div className="empty-state">
                             <p>No ledger entries yet</p>
-                        </div>
-                    )}
-                </div>
-
-                {/* Recent Bookings */}
-                <div className="recent-card">
-                    <div className="recent-header">
-                        <h3>Upcoming Bookings</h3>
-                        <a href="/dashboard/bookings" className="recent-link">
-                            View all →
-                        </a>
-                    </div>
-                    {recentBookings && recentBookings.length > 0 ? (
-                        <table className="km-table">
-                            <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Customer</th>
-                                    <th>Event</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {recentBookings.map((booking) => (
-                                    <tr key={booking.id}>
-                                        <td>{formatDate(booking.event_date)}</td>
-                                        <td>{booking.customer_name}</td>
-                                        <td>{booking.event_type || "—"}</td>
-                                        <td>
-                                            <span
-                                                className={`km-badge ${booking.status === "confirmed"
-                                                    ? "km-badge-success"
-                                                    : booking.status === "tentative"
-                                                        ? "km-badge-warning"
-                                                        : "km-badge-error"
-                                                    }`}
-                                            >
-                                                {booking.status}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    ) : (
-                        <div className="empty-state">
-                            <p>No bookings yet</p>
                         </div>
                     )}
                 </div>
@@ -254,9 +195,9 @@ export default async function DashboardPage() {
                     font-weight: 700;
                     line-height: 1.2;
                 }
-                .recent-grid {
+                .recent-section {
                     display: grid;
-                    grid-template-columns: repeat(2, 1fr);
+                    grid-template-columns: 1fr;
                     gap: var(--space-5);
                 }
                 .recent-card {
@@ -298,9 +239,6 @@ export default async function DashboardPage() {
                 @media (max-width: 1024px) {
                     .stats-grid {
                         grid-template-columns: repeat(2, 1fr);
-                    }
-                    .recent-grid {
-                        grid-template-columns: 1fr;
                     }
                 }
                 @media (max-width: 640px) {

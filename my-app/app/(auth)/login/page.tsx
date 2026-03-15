@@ -51,16 +51,16 @@ function LoginContent() {
                         <p>Where Dreams Meet Tradition</p>
                         <div className={styles.brandFeatures}>
                             <div className={styles.feature}>
-                                <span className={styles.featureIcon}>📊</span>
-                                <span>Manage bookings & finances</span>
-                            </div>
-                            <div className={styles.feature}>
                                 <span className={styles.featureIcon}>📒</span>
                                 <span>Track income & expenses</span>
                             </div>
                             <div className={styles.feature}>
-                                <span className={styles.featureIcon}>📅</span>
-                                <span>Event calendar & scheduling</span>
+                                <span className={styles.featureIcon}>📊</span>
+                                <span>Financial reports & analytics</span>
+                            </div>
+                            <div className={styles.feature}>
+                                <span className={styles.featureIcon}>👥</span>
+                                <span>Staff & user management</span>
                             </div>
                         </div>
                     </div>
