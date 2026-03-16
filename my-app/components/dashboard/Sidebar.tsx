@@ -21,6 +21,8 @@ interface SidebarProps {
     userName?: string;
     mobileOpen?: boolean;
     onClose?: () => void;
+    collapsed: boolean;
+    onToggleCollapse: () => void;
 }
 
 const NAV_ITEMS = [
@@ -33,10 +35,9 @@ const ADMIN_ITEMS = [
     { href: "/dashboard/users", label: "Users", icon: Users },
 ];
 
-export default function Sidebar({ userRole, userName, mobileOpen, onClose }: SidebarProps) {
+export default function Sidebar({ userRole, userName, mobileOpen, onClose, collapsed, onToggleCollapse }: SidebarProps) {
     const pathname = usePathname();
     const router = useRouter();
-    const [collapsed, setCollapsed] = useState(false);
 
     const isActive = (href: string) => {
         if (href === "/dashboard") return pathname === "/dashboard";
@@ -88,7 +89,7 @@ export default function Sidebar({ userRole, userName, mobileOpen, onClose }: Sid
                 {/* Collapse Toggle (desktop only) */}
                 <button
                     className={styles.toggle}
-                    onClick={() => setCollapsed(!collapsed)}
+                    onClick={onToggleCollapse}
                     title={collapsed ? "Expand" : "Collapse"}
                 >
                     {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}

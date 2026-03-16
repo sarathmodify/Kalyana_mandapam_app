@@ -17,6 +17,7 @@ export default function DashboardShell({
     userName,
 }: DashboardShellProps) {
     const [mobileOpen, setMobileOpen] = useState(false);
+    const [collapsed, setCollapsed] = useState(false);
 
     return (
         <div className={styles.shell}>
@@ -25,8 +26,10 @@ export default function DashboardShell({
                 userName={userName}
                 mobileOpen={mobileOpen}
                 onClose={() => setMobileOpen(false)}
+                collapsed={collapsed}
+                onToggleCollapse={() => setCollapsed(!collapsed)}
             />
-            <div className={styles.main}>
+            <div className={`${styles.main} ${collapsed ? styles.mainCollapsed : ""}`}>
                 <TopNavbar
                     userName={userName}
                     userRole={userRole}
