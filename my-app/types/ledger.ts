@@ -15,8 +15,9 @@ export interface LedgerEntry {
     notes?: string;
     payment_status?: LedgerPaymentStatus;
     total_event_amount?: number;
-    advance_amount?: number;
-    pending_amount?: number;
+    parent_entry_id?: string;
+    calculated_total_paid?: number;
+    calculated_pending_amount?: number;
     created_by?: string;
     updated_by?: string;
     created_at: string;

@@ -33,6 +33,7 @@ export default function LedgerClient({ initialEntries, isAdmin }: LedgerClientPr
     const [deleteId, setDeleteId] = useState<string | null>(null);
     const [deleting, setDeleting] = useState(false);
     const [collectBalanceEntry, setCollectBalanceEntry] = useState<LedgerEntry | null>(null);
+    const [collectAmount, setCollectAmount] = useState<string>("");
     const [collecting, setCollecting] = useState(false);
 
     // Filters
@@ -57,8 +58,24 @@ export default function LedgerClient({ initialEntries, isAdmin }: LedgerClientPr
         setLoading(false);
     }, []);
 
+    // Compute dynamic balances for advance payments
+    const enrichedEntries = entries.map(entry => {
+        if (entry.payment_status === "advance_pending" || entry.payment_status === "completed") {
+            const childEntries = entries.filter(e => e.parent_entry_id === entry.id);
+            const totalPaid = Number(entry.amount) + childEntries.reduce((sum, e) => sum + Number(e.amount), 0);
+            const totalEventAmount = Number(entry.total_event_amount) || 0;
+            const pendingAmount = Math.max(0, totalEventAmount - totalPaid);
+            return {
+                ...entry,
+                calculated_total_paid: totalPaid,
+                calculated_pending_amount: pendingAmount,
+            };
+        }
+        return entry;
+    });
+
     // Filtered entries
-    const filteredEntries = entries.filter((entry) => {
+    const filteredEntries = enrichedEntries.filter((entry) => {
         if (typeFilter !== "all" && entry.type !== typeFilter) return false;
         if (categoryFilter !== "all" && entry.category !== categoryFilter) return false;
         if (searchQuery && !entry.description.toLowerCase().includes(searchQuery.toLowerCase())) return false;
@@ -133,29 +150,60 @@ export default function LedgerClient({ initialEntries, isAdmin }: LedgerClientPr
         }
     };
 
-    const handleCollectBalance = async () => {
+    const handleCollectBalance = async (e: React.FormEvent) => {
+        e.preventDefault();
         if (!collectBalanceEntry) return;
+
+        const amountToCollect = Number(collectAmount);
+        if (!amountToCollect || amountToCollect <= 0) {
+            alert("Please enter a valid amount.");
+            return;
+        }
+
+        if (amountToCollect > (collectBalanceEntry.calculated_pending_amount || 0)) {
+            alert("Amount exceeds pending balance.");
+            return;
+        }
+
         setCollecting(true);
         try {
-            const { error } = await supabase
-                .from("ledger_entries")
-                .update({
-                    amount: collectBalanceEntry.total_event_amount,
-                    pending_amount: 0,
-                    payment_status: "completed",
-                    updated_at: new Date().toISOString()
-                })
-                .eq("id", collectBalanceEntry.id);
+            const { data: userData } = await supabase.auth.getUser();
 
-            if (error) {
-                console.error("Collect failed:", error.message);
-                alert("Failed to collect balance: " + error.message);
-                return;
+            // 1. Insert new child entry for the installment
+            const { error: insertError } = await supabase
+                .from("ledger_entries")
+                .insert({
+                    date: new Date().toISOString().split("T")[0],
+                    description: `Installment for: ${collectBalanceEntry.description}`,
+                    amount: amountToCollect,
+                    type: "income",
+                    category: collectBalanceEntry.category || null,
+                    payment_method: null,
+                    parent_entry_id: collectBalanceEntry.id,
+                    payment_status: "regular",
+                    created_by: userData?.user?.id,
+                    updated_by: userData?.user?.id,
+                });
+
+            if (insertError) throw insertError;
+
+            // 2. Check if this completes the payment
+            const newPending = (collectBalanceEntry.calculated_pending_amount || 0) - amountToCollect;
+            if (newPending === 0) {
+                const { error: updateError } = await supabase
+                    .from("ledger_entries")
+                    .update({
+                        payment_status: "completed",
+                        updated_by: userData?.user?.id,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq("id", collectBalanceEntry.id);
+                if (updateError) throw updateError;
             }
 
             setCollectBalanceEntry(null);
             fetchEntries();
-        } catch (err) {
+        } catch (err: any) {
             console.error("Collect balance error:", err);
             alert("Failed to collect balance. Please try again.");
         } finally {
@@ -344,12 +392,17 @@ export default function LedgerClient({ initialEntries, isAdmin }: LedgerClientPr
                                             </span>
                                             {entry.payment_status === "advance_pending" && (
                                                 <span className="km-badge" style={{ backgroundColor: "#FEF3C7", color: "#D97706", marginLeft: "8px", fontSize: "12px", padding: "2px 6px" }}>
-                                                    Pending: ₹{Number(entry.pending_amount).toLocaleString()}
+                                                    Pending: ₹{Number(entry.calculated_pending_amount).toLocaleString()}
                                                 </span>
                                             )}
                                             {entry.payment_status === "completed" && entry.total_event_amount && (
                                                 <span className="km-badge" style={{ backgroundColor: "#D1FAE5", color: "#059669", marginLeft: "8px", fontSize: "12px", padding: "2px 6px" }}>
                                                     Completed
+                                                </span>
+                                            )}
+                                            {entry.parent_entry_id && (
+                                                <span className="km-badge" style={{ backgroundColor: "#E0E7FF", color: "#4F46E5", marginLeft: "8px", fontSize: "12px", padding: "2px 6px" }}>
+                                                    Installment
                                                 </span>
                                             )}
                                         </td>
@@ -363,8 +416,11 @@ export default function LedgerClient({ initialEntries, isAdmin }: LedgerClientPr
                                                         <button
                                                             className={`${styles.actionBtn}`}
                                                             style={{ color: '#16A34A', backgroundColor: '#F0FDF4', borderColor: '#BBF7D0' }}
-                                                            onClick={() => setCollectBalanceEntry(entry)}
-                                                            title="Collect Balance"
+                                                            onClick={() => {
+                                                                setCollectAmount(String(entry.calculated_pending_amount || ""));
+                                                                setCollectBalanceEntry(entry);
+                                                            }}
+                                                            title="Collect Installment"
                                                         >
                                                             <CheckCircle size={16} />
                                                         </button>
@@ -424,20 +480,49 @@ export default function LedgerClient({ initialEntries, isAdmin }: LedgerClientPr
             {collectBalanceEntry && (
                 <div className={styles.modalOverlay} onClick={() => !collecting && setCollectBalanceEntry(null)}>
                     <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-                        <div className={styles.modalIcon} style={{ background: '#F0FDF4', color: '#16A34A' }}>💰</div>
-                        <h3>Collect Balance</h3>
-                        <p>Are you sure you want to collect the remaining balance of <strong>₹{Number(collectBalanceEntry.pending_amount).toLocaleString()}</strong>?</p>
-                        <p style={{ fontSize: '14px', color: 'var(--color-text-muted)', marginBottom: '24px' }}>
-                            This will update the ledger entry to show the full amount of <strong>₹{Number(collectBalanceEntry.total_event_amount).toLocaleString()}</strong> as paid.
-                        </p>
-                        <div className={styles.modalActions}>
-                            <button className={styles.cancelBtn} onClick={() => setCollectBalanceEntry(null)} disabled={collecting}>
-                                Cancel
-                            </button>
-                            <button className="km-btn-primary" onClick={handleCollectBalance} disabled={collecting}>
-                                {collecting ? "Processing..." : "Confirm Collection"}
-                            </button>
-                        </div>
+                        <form onSubmit={handleCollectBalance}>
+                            <div className={styles.modalIcon} style={{ background: '#F0FDF4', color: '#16A34A' }}>💰</div>
+                            <h3>Collect Installment</h3>
+                            <p style={{ marginBottom: '16px' }}>Record a partial or full payment for this advance.</p>
+
+                            <div style={{ backgroundColor: '#f9fafb', padding: '12px', borderRadius: '8px', marginBottom: '16px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '14px' }}>
+                                    <span style={{ color: 'var(--color-text-muted)' }}>Total Event Amount:</span>
+                                    <strong>₹{Number(collectBalanceEntry.total_event_amount).toLocaleString()}</strong>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '14px' }}>
+                                    <span style={{ color: 'var(--color-text-muted)' }}>Total Paid So Far:</span>
+                                    <strong style={{ color: '#16A34A' }}>₹{Number(collectBalanceEntry.calculated_total_paid).toLocaleString()}</strong>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', paddingTop: '8px', borderTop: '1px solid #e5e7eb' }}>
+                                    <span style={{ color: 'var(--color-text-muted)' }}>Remaining Balance:</span>
+                                    <strong style={{ color: '#D97706' }}>₹{Number(collectBalanceEntry.calculated_pending_amount).toLocaleString()}</strong>
+                                </div>
+                            </div>
+
+                            <div className={styles.field} style={{ marginBottom: '24px', textAlign: 'left' }}>
+                                <label className="km-label">Amount Collecting Today (₹)</label>
+                                <input
+                                    type="number"
+                                    className="km-input"
+                                    value={collectAmount}
+                                    onChange={(e) => setCollectAmount(e.target.value)}
+                                    min="1"
+                                    step="0.01"
+                                    max={collectBalanceEntry.calculated_pending_amount || 0}
+                                    required
+                                />
+                            </div>
+
+                            <div className={styles.modalActions}>
+                                <button type="button" className={styles.cancelBtn} onClick={() => setCollectBalanceEntry(null)} disabled={collecting}>
+                                    Cancel
+                                </button>
+                                <button type="submit" className="km-btn-primary" disabled={collecting}>
+                                    {collecting ? "Processing..." : "Record Payment"}
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}

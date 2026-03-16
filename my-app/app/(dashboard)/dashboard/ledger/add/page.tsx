@@ -71,8 +71,6 @@ export default function AddLedgerEntryPage() {
 
         const finalAmount = Number(formData.amount);
         const finalTotalEventAmount = isAdvance ? Number(totalEventAmount) : null;
-        const finalAdvanceAmount = isAdvance ? finalAmount : null;
-        const finalPendingAmount = isAdvance ? finalTotalEventAmount! - finalAdvanceAmount! : null;
         const finalPaymentStatus = isAdvance ? "advance_pending" : "regular";
 
         if (isAdvance && (!totalEventAmount || Number(totalEventAmount) <= 0)) {
@@ -100,8 +98,6 @@ export default function AddLedgerEntryPage() {
                 notes: formData.notes || null,
                 payment_status: finalPaymentStatus,
                 total_event_amount: finalTotalEventAmount,
-                advance_amount: finalAdvanceAmount,
-                pending_amount: finalPendingAmount,
                 created_by: user?.id,
                 updated_by: user?.id,
             });
@@ -167,7 +163,7 @@ export default function AddLedgerEntryPage() {
                     {formData.type === "income" && (
                         <div className={styles.field}>
                             <label className="km-label" style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 'normal' }}>
-                                <input
+                                <input style={{ appearance: 'auto' }}
                                     type="checkbox"
                                     checked={isAdvance}
                                     onChange={(e) => setIsAdvance(e.target.checked)}
