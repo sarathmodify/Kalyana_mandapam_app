@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useRole } from "@/hooks/useRole";
 import { useAuth } from "@/hooks/useAuth";
 import { LEDGER_CATEGORIES, PAYMENT_METHODS } from "@/constants";
-import type { LedgerType, PaymentMethod } from "@/types/ledger";
+import type { LedgerType, PaymentMethod, LedgerPaymentStatus } from "@/types/ledger";
 import Link from "next/link";
 import {
     ArrowLeft,
@@ -31,25 +31,13 @@ export default function AddLedgerEntryPage() {
         category: "",
         payment_method: "" as PaymentMethod | "",
         reference_no: "",
-        booking_id: "",
         notes: "",
     });
 
     const [error, setError] = useState("");
     const [saving, setSaving] = useState(false);
-    const [bookings, setBookings] = useState<{ id: string; customer_name: string; event_date: string }[]>([]);
-
-    // Fetch bookings for the "Link to Booking" dropdown
-    useEffect(() => {
-        async function fetchBookings() {
-            const { data } = await supabase
-                .from("bookings")
-                .select("id, customer_name, event_date")
-                .order("event_date", { ascending: false });
-            if (data) setBookings(data);
-        }
-        fetchBookings();
-    }, []);
+    const [isAdvance, setIsAdvance] = useState(false);
+    const [totalEventAmount, setTotalEventAmount] = useState("");
 
     // Redirect non-admins
     useEffect(() => {
@@ -81,18 +69,39 @@ export default function AddLedgerEntryPage() {
             return;
         }
 
+        const finalAmount = Number(formData.amount);
+        const finalTotalEventAmount = isAdvance ? Number(totalEventAmount) : null;
+        const finalAdvanceAmount = isAdvance ? finalAmount : null;
+        const finalPendingAmount = isAdvance ? finalTotalEventAmount! - finalAdvanceAmount! : null;
+        const finalPaymentStatus = isAdvance ? "advance_pending" : "regular";
+
+        if (isAdvance && (!totalEventAmount || Number(totalEventAmount) <= 0)) {
+            setError("Total Event Amount is required for advance payments.");
+            setSaving(false);
+            return;
+        }
+
+        if (isAdvance && finalAmount >= Number(totalEventAmount)) {
+            setError("Advance amount must be less than Total Event Amount.");
+            setSaving(false);
+            return;
+        }
+
         const { error: insertError } = await supabase
             .from("ledger_entries")
             .insert({
                 date: formData.date,
                 description: formData.description.trim(),
-                amount: Number(formData.amount),
+                amount: finalAmount,
                 type: formData.type,
                 category: formData.category || null,
                 payment_method: formData.payment_method || null,
                 reference_no: formData.reference_no || null,
-                booking_id: formData.booking_id || null,
                 notes: formData.notes || null,
+                payment_status: finalPaymentStatus,
+                total_event_amount: finalTotalEventAmount,
+                advance_amount: finalAdvanceAmount,
+                pending_amount: finalPendingAmount,
                 created_by: user?.id,
                 updated_by: user?.id,
             });
@@ -154,36 +163,104 @@ export default function AddLedgerEntryPage() {
                         </div>
                     </div>
 
+                    {/* Advance Payment Toggle */}
+                    {formData.type === "income" && (
+                        <div className={styles.field}>
+                            <label className="km-label" style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 'normal' }}>
+                                <input
+                                    type="checkbox"
+                                    checked={isAdvance}
+                                    onChange={(e) => setIsAdvance(e.target.checked)}
+                                />
+                                Is this an Event Advance Payment?
+                            </label>
+                        </div>
+                    )}
+
                     {/* Date & Amount */}
-                    <div className={styles.row}>
-                        <div className={styles.field}>
-                            <label htmlFor="date" className="km-label">Date *</label>
-                            <input
-                                id="date"
-                                name="date"
-                                type="date"
-                                className="km-input"
-                                value={formData.date}
-                                onChange={handleChange}
-                                required
-                            />
+                    {isAdvance ? (
+                        <div className={styles.row}>
+                            <div className={styles.field}>
+                                <label htmlFor="date" className="km-label">Date *</label>
+                                <input
+                                    id="date"
+                                    name="date"
+                                    type="date"
+                                    className="km-input"
+                                    value={formData.date}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+                            <div className={styles.field}>
+                                <label htmlFor="totalEventAmount" className="km-label">Total Event Amount (₹) *</label>
+                                <input
+                                    id="totalEventAmount"
+                                    type="number"
+                                    className="km-input"
+                                    placeholder="0.00"
+                                    value={totalEventAmount}
+                                    onChange={(e) => setTotalEventAmount(e.target.value)}
+                                    min="0.01"
+                                    step="0.01"
+                                    required={isAdvance}
+                                />
+                            </div>
+                            <div className={styles.field}>
+                                <label htmlFor="amount" className="km-label">Advance Received (₹) *</label>
+                                <input
+                                    id="amount"
+                                    name="amount"
+                                    type="number"
+                                    className="km-input"
+                                    placeholder="0.00"
+                                    value={formData.amount}
+                                    onChange={handleChange}
+                                    min="0.01"
+                                    step="0.01"
+                                    required
+                                />
+                            </div>
                         </div>
-                        <div className={styles.field}>
-                            <label htmlFor="amount" className="km-label">Amount (₹) *</label>
-                            <input
-                                id="amount"
-                                name="amount"
-                                type="number"
-                                className="km-input"
-                                placeholder="0.00"
-                                value={formData.amount}
-                                onChange={handleChange}
-                                min="0.01"
-                                step="0.01"
-                                required
-                            />
+                    ) : (
+                        <div className={styles.row}>
+                            <div className={styles.field}>
+                                <label htmlFor="date" className="km-label">Date *</label>
+                                <input
+                                    id="date"
+                                    name="date"
+                                    type="date"
+                                    className="km-input"
+                                    value={formData.date}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+                            <div className={styles.field}>
+                                <label htmlFor="amount" className="km-label">Amount (₹) *</label>
+                                <input
+                                    id="amount"
+                                    name="amount"
+                                    type="number"
+                                    className="km-input"
+                                    placeholder="0.00"
+                                    value={formData.amount}
+                                    onChange={handleChange}
+                                    min="0.01"
+                                    step="0.01"
+                                    required
+                                />
+                            </div>
                         </div>
-                    </div>
+                    )}
+
+                    {isAdvance && totalEventAmount && formData.amount && (
+                        <div className={styles.field} style={{ backgroundColor: '#f0f9ff', padding: '12px', borderRadius: '8px', border: '1px solid #bae6fd', marginBottom: '16px' }}>
+                            <p style={{ margin: 0, color: '#0369a1', fontSize: '14px' }}>
+                                <strong>Pending Balance:</strong> ₹{Math.max(0, Number(totalEventAmount) - Number(formData.amount)).toFixed(2)}
+                            </p>
+                        </div>
+                    )}
 
                     {/* Description */}
                     <div className={styles.field}>
@@ -234,37 +311,18 @@ export default function AddLedgerEntryPage() {
                         </div>
                     </div>
 
-                    {/* Reference No & Booking Link */}
-                    <div className={styles.row}>
-                        <div className={styles.field}>
-                            <label htmlFor="reference_no" className="km-label">Reference No.</label>
-                            <input
-                                id="reference_no"
-                                name="reference_no"
-                                type="text"
-                                className="km-input"
-                                placeholder="e.g., TXN-12345"
-                                value={formData.reference_no}
-                                onChange={handleChange}
-                            />
-                        </div>
-                        <div className={styles.field}>
-                            <label htmlFor="booking_id" className="km-label">Link to Booking</label>
-                            <select
-                                id="booking_id"
-                                name="booking_id"
-                                className={styles.select}
-                                value={formData.booking_id}
-                                onChange={handleChange}
-                            >
-                                <option value="">No linked booking</option>
-                                {bookings.map((b) => (
-                                    <option key={b.id} value={b.id}>
-                                        {b.customer_name} — {b.event_date}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
+                    {/* Reference No */}
+                    <div className={styles.field}>
+                        <label htmlFor="reference_no" className="km-label">Reference No.</label>
+                        <input
+                            id="reference_no"
+                            name="reference_no"
+                            type="text"
+                            className="km-input"
+                            placeholder="e.g., TXN-12345"
+                            value={formData.reference_no}
+                            onChange={handleChange}
+                        />
                     </div>
 
                     {/* Notes */}

@@ -4,37 +4,23 @@ import {
     TrendingUp,
     TrendingDown,
     Wallet,
-    CalendarCheck,
 } from "lucide-react";
 
 export default async function DashboardPage() {
     const supabase = await createClient();
 
-    // Fetch all data in parallel (4x faster than sequential)
+    // Fetch all data in parallel
     const [
         { data: ledgerEntries },
-        { data: upcomingBookings },
         { data: recentLedger },
-        { data: recentBookings },
     ] = await Promise.all([
         supabase
             .from("ledger_entries")
             .select("amount, type"),
         supabase
-            .from("bookings")
-            .select("*")
-            .eq("status", "confirmed")
-            .gte("event_date", new Date().toISOString().split("T")[0])
-            .order("event_date", { ascending: true }),
-        supabase
             .from("ledger_entries")
             .select("*")
             .order("date", { ascending: false })
-            .limit(5),
-        supabase
-            .from("bookings")
-            .select("*")
-            .order("event_date", { ascending: true })
             .limit(5),
     ]);
 
@@ -50,7 +36,6 @@ export default async function DashboardPage() {
             .reduce((sum, e) => sum + Number(e.amount), 0) || 0;
 
     const netBalance = totalIncome - totalExpenses;
-    const upcomingCount = upcomingBookings?.length || 0;
 
     const stats = [
         {
@@ -73,13 +58,6 @@ export default async function DashboardPage() {
             icon: Wallet,
             color: "#1E40AF",
             bg: "#EFF6FF",
-        },
-        {
-            label: "Upcoming Bookings",
-            value: upcomingCount.toString(),
-            icon: CalendarCheck,
-            color: "#9333EA",
-            bg: "#FAF5FF",
         },
     ];
 
@@ -154,53 +132,6 @@ export default async function DashboardPage() {
                         </div>
                     )}
                 </div>
-
-                {/* Recent Bookings */}
-                <div className="recent-card">
-                    <div className="recent-header">
-                        <h3>Upcoming Bookings</h3>
-                        <a href="/dashboard/bookings" className="recent-link">
-                            View all →
-                        </a>
-                    </div>
-                    {recentBookings && recentBookings.length > 0 ? (
-                        <table className="km-table">
-                            <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Customer</th>
-                                    <th>Event</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {recentBookings.map((booking) => (
-                                    <tr key={booking.id}>
-                                        <td>{formatDate(booking.event_date)}</td>
-                                        <td>{booking.customer_name}</td>
-                                        <td>{booking.event_type || "—"}</td>
-                                        <td>
-                                            <span
-                                                className={`km-badge ${booking.status === "confirmed"
-                                                    ? "km-badge-success"
-                                                    : booking.status === "tentative"
-                                                        ? "km-badge-warning"
-                                                        : "km-badge-error"
-                                                    }`}
-                                            >
-                                                {booking.status}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    ) : (
-                        <div className="empty-state">
-                            <p>No bookings yet</p>
-                        </div>
-                    )}
-                </div>
             </div>
 
             <style>{`
@@ -209,7 +140,7 @@ export default async function DashboardPage() {
                 }
                 .stats-grid {
                     display: grid;
-                    grid-template-columns: repeat(4, 1fr);
+                    grid-template-columns: repeat(3, 1fr);
                     gap: var(--space-5);
                     margin-bottom: var(--space-8);
                 }
@@ -256,7 +187,7 @@ export default async function DashboardPage() {
                 }
                 .recent-grid {
                     display: grid;
-                    grid-template-columns: repeat(2, 1fr);
+                    grid-template-columns: 1fr;
                     gap: var(--space-5);
                 }
                 .recent-card {
@@ -309,6 +240,6 @@ export default async function DashboardPage() {
                     }
                 }
             `}</style>
-        </div>
+        </div >
     );
 }

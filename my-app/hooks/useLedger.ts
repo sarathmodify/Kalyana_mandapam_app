@@ -12,6 +12,7 @@ interface UseLedgerReturn {
     addEntry: (entry: Omit<LedgerEntry, "id" | "created_at" | "updated_at">) => Promise<{ success: boolean; error?: string }>;
     updateEntry: (id: string, updates: Partial<LedgerEntry>) => Promise<{ success: boolean; error?: string }>;
     deleteEntry: (id: string) => Promise<{ success: boolean; error?: string }>;
+    collectBalance: (id: string, totalAmount: number) => Promise<{ success: boolean; error?: string }>;
 }
 
 /**
@@ -99,6 +100,30 @@ export function useLedger(): UseLedgerReturn {
         return { success: true };
     };
 
+    const collectBalance = async (id: string, totalAmount: number) => {
+        const {
+            data: { user },
+        } = await supabase.auth.getUser();
+
+        const { error: updateError } = await supabase
+            .from("ledger_entries")
+            .update({
+                amount: totalAmount,
+                pending_amount: 0,
+                payment_status: "completed",
+                updated_by: user?.id,
+                updated_at: new Date().toISOString(),
+            })
+            .eq("id", id);
+
+        if (updateError) {
+            return { success: false, error: updateError.message };
+        }
+
+        await fetchEntries();
+        return { success: true };
+    };
+
     return {
         entries,
         loading,
@@ -107,5 +132,6 @@ export function useLedger(): UseLedgerReturn {
         addEntry,
         updateEntry,
         deleteEntry,
+        collectBalance,
     };
 }

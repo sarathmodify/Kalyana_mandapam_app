@@ -1,6 +1,8 @@
 export type LedgerType = "income" | "expense";
 export type PaymentMethod = "cash" | "bank_transfer" | "upi" | "cheque" | "other";
 
+export type LedgerPaymentStatus = "regular" | "advance_pending" | "completed";
+
 export interface LedgerEntry {
     id: string;
     date: string;
@@ -10,8 +12,11 @@ export interface LedgerEntry {
     category?: string;
     payment_method?: PaymentMethod;
     reference_no?: string;
-    booking_id?: string;
     notes?: string;
+    payment_status?: LedgerPaymentStatus;
+    total_event_amount?: number;
+    advance_amount?: number;
+    pending_amount?: number;
     created_by?: string;
     updated_by?: string;
     created_at: string;

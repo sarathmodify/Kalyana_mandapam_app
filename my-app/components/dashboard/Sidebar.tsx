@@ -26,9 +26,7 @@ interface SidebarProps {
 const NAV_ITEMS = [
     { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
     { href: "/dashboard/ledger", label: "Ledger", icon: BookOpen },
-    { href: "/dashboard/bookings", label: "Bookings", icon: Calendar },
     { href: "/dashboard/reports", label: "Reports", icon: BarChart3 },
-    { href: "/dashboard/inquiries", label: "Inquiries", icon: MessageSquare },
 ];
 
 const ADMIN_ITEMS = [

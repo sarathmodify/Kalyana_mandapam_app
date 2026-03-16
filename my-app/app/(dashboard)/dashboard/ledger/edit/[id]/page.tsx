@@ -36,14 +36,12 @@ export default function EditLedgerEntryPage({
         category: "",
         payment_method: "" as PaymentMethod | "",
         reference_no: "",
-        booking_id: "",
         notes: "",
     });
 
     const [error, setError] = useState("");
     const [saving, setSaving] = useState(false);
     const [loadingEntry, setLoadingEntry] = useState(true);
-    const [bookings, setBookings] = useState<{ id: string; customer_name: string; event_date: string }[]>([]);
 
     // Fetch existing entry
     useEffect(() => {
@@ -68,25 +66,12 @@ export default function EditLedgerEntryPage({
                 category: entry.category || "",
                 payment_method: (entry.payment_method || "") as PaymentMethod | "",
                 reference_no: entry.reference_no || "",
-                booking_id: entry.booking_id || "",
                 notes: entry.notes || "",
             });
             setLoadingEntry(false);
         }
         fetchEntry();
     }, [id]);
-
-    // Fetch bookings for dropdown
-    useEffect(() => {
-        async function fetchBookings() {
-            const { data } = await supabase
-                .from("bookings")
-                .select("id, customer_name, event_date")
-                .order("event_date", { ascending: false });
-            if (data) setBookings(data);
-        }
-        fetchBookings();
-    }, []);
 
     // Redirect non-admins
     useEffect(() => {
@@ -128,7 +113,6 @@ export default function EditLedgerEntryPage({
                 category: formData.category || null,
                 payment_method: formData.payment_method || null,
                 reference_no: formData.reference_no || null,
-                booking_id: formData.booking_id || null,
                 notes: formData.notes || null,
                 updated_by: user?.id,
                 updated_at: new Date().toISOString(),
@@ -272,37 +256,18 @@ export default function EditLedgerEntryPage({
                         </div>
                     </div>
 
-                    {/* Reference No & Booking Link */}
-                    <div className={styles.row}>
-                        <div className={styles.field}>
-                            <label htmlFor="reference_no" className="km-label">Reference No.</label>
-                            <input
-                                id="reference_no"
-                                name="reference_no"
-                                type="text"
-                                className="km-input"
-                                placeholder="e.g., TXN-12345"
-                                value={formData.reference_no}
-                                onChange={handleChange}
-                            />
-                        </div>
-                        <div className={styles.field}>
-                            <label htmlFor="booking_id" className="km-label">Link to Booking</label>
-                            <select
-                                id="booking_id"
-                                name="booking_id"
-                                className={styles.select}
-                                value={formData.booking_id}
-                                onChange={handleChange}
-                            >
-                                <option value="">No linked booking</option>
-                                {bookings.map((b) => (
-                                    <option key={b.id} value={b.id}>
-                                        {b.customer_name} — {b.event_date}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
+                    {/* Reference No */}
+                    <div className={styles.field}>
+                        <label htmlFor="reference_no" className="km-label">Reference No.</label>
+                        <input
+                            id="reference_no"
+                            name="reference_no"
+                            type="text"
+                            className="km-input"
+                            placeholder="e.g., TXN-12345"
+                            value={formData.reference_no}
+                            onChange={handleChange}
+                        />
                     </div>
 
                     {/* Notes */}
