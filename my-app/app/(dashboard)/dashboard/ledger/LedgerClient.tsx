@@ -18,6 +18,7 @@ import {
     BookOpen,
     X,
     History,
+    CheckCircle,
 } from "lucide-react";
 import styles from "./ledger.module.css";
 
@@ -31,6 +32,8 @@ export default function LedgerClient({ initialEntries, isAdmin }: LedgerClientPr
     const [loading, setLoading] = useState(false);
     const [deleteId, setDeleteId] = useState<string | null>(null);
     const [deleting, setDeleting] = useState(false);
+    const [collectBalanceEntry, setCollectBalanceEntry] = useState<LedgerEntry | null>(null);
+    const [collecting, setCollecting] = useState(false);
 
     // Filters
     const [typeFilter, setTypeFilter] = useState<string>("all");
@@ -127,6 +130,36 @@ export default function LedgerClient({ initialEntries, isAdmin }: LedgerClientPr
             alert("Failed to delete entry. Please try again.");
         } finally {
             setDeleting(false);
+        }
+    };
+
+    const handleCollectBalance = async () => {
+        if (!collectBalanceEntry) return;
+        setCollecting(true);
+        try {
+            const { error } = await supabase
+                .from("ledger_entries")
+                .update({
+                    amount: collectBalanceEntry.total_event_amount,
+                    pending_amount: 0,
+                    payment_status: "completed",
+                    updated_at: new Date().toISOString()
+                })
+                .eq("id", collectBalanceEntry.id);
+
+            if (error) {
+                console.error("Collect failed:", error.message);
+                alert("Failed to collect balance: " + error.message);
+                return;
+            }
+
+            setCollectBalanceEntry(null);
+            fetchEntries();
+        } catch (err) {
+            console.error("Collect balance error:", err);
+            alert("Failed to collect balance. Please try again.");
+        } finally {
+            setCollecting(false);
         }
     };
 
@@ -309,6 +342,16 @@ export default function LedgerClient({ initialEntries, isAdmin }: LedgerClientPr
                                             <span className={`km-badge ${entry.type === "income" ? "km-badge-success" : "km-badge-error"}`}>
                                                 {entry.type}
                                             </span>
+                                            {entry.payment_status === "advance_pending" && (
+                                                <span className="km-badge" style={{ backgroundColor: "#FEF3C7", color: "#D97706", marginLeft: "8px", fontSize: "12px", padding: "2px 6px" }}>
+                                                    Pending: ₹{Number(entry.pending_amount).toLocaleString()}
+                                                </span>
+                                            )}
+                                            {entry.payment_status === "completed" && entry.total_event_amount && (
+                                                <span className="km-badge" style={{ backgroundColor: "#D1FAE5", color: "#059669", marginLeft: "8px", fontSize: "12px", padding: "2px 6px" }}>
+                                                    Completed
+                                                </span>
+                                            )}
                                         </td>
                                         <td>
                                             {PAYMENT_METHODS.find((p) => p.value === entry.payment_method)?.label || "—"}
@@ -316,6 +359,16 @@ export default function LedgerClient({ initialEntries, isAdmin }: LedgerClientPr
                                         {isAdmin && (
                                             <td>
                                                 <div className={styles.actions}>
+                                                    {entry.payment_status === "advance_pending" && (
+                                                        <button
+                                                            className={`${styles.actionBtn}`}
+                                                            style={{ color: '#16A34A', backgroundColor: '#F0FDF4', borderColor: '#BBF7D0' }}
+                                                            onClick={() => setCollectBalanceEntry(entry)}
+                                                            title="Collect Balance"
+                                                        >
+                                                            <CheckCircle size={16} />
+                                                        </button>
+                                                    )}
                                                     <Link
                                                         href={`/dashboard/ledger/edit/${entry.id}`}
                                                         className={`${styles.actionBtn} ${styles.editBtn}`}
@@ -361,6 +414,28 @@ export default function LedgerClient({ initialEntries, isAdmin }: LedgerClientPr
                             </button>
                             <button className={styles.confirmDeleteBtn} onClick={handleDelete} disabled={deleting}>
                                 {deleting ? "Deleting..." : "Delete"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Collect Balance Modal */}
+            {collectBalanceEntry && (
+                <div className={styles.modalOverlay} onClick={() => !collecting && setCollectBalanceEntry(null)}>
+                    <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+                        <div className={styles.modalIcon} style={{ background: '#F0FDF4', color: '#16A34A' }}>💰</div>
+                        <h3>Collect Balance</h3>
+                        <p>Are you sure you want to collect the remaining balance of <strong>₹{Number(collectBalanceEntry.pending_amount).toLocaleString()}</strong>?</p>
+                        <p style={{ fontSize: '14px', color: 'var(--color-text-muted)', marginBottom: '24px' }}>
+                            This will update the ledger entry to show the full amount of <strong>₹{Number(collectBalanceEntry.total_event_amount).toLocaleString()}</strong> as paid.
+                        </p>
+                        <div className={styles.modalActions}>
+                            <button className={styles.cancelBtn} onClick={() => setCollectBalanceEntry(null)} disabled={collecting}>
+                                Cancel
+                            </button>
+                            <button className="km-btn-primary" onClick={handleCollectBalance} disabled={collecting}>
+                                {collecting ? "Processing..." : "Confirm Collection"}
                             </button>
                         </div>
                     </div>

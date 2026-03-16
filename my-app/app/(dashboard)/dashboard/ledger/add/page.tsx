@@ -36,6 +36,8 @@ export default function AddLedgerEntryPage() {
 
     const [error, setError] = useState("");
     const [saving, setSaving] = useState(false);
+    const [isAdvance, setIsAdvance] = useState(false);
+    const [totalEventAmount, setTotalEventAmount] = useState("");
 
     // Redirect non-admins
     useEffect(() => {
