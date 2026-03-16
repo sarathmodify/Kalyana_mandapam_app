@@ -2,7 +2,7 @@
     animation: fadeIn 0.3s ease;
 }
 
-/* Header */
+/* ── Header ── */
 .header {
     display: flex;
     justify-content: space-between;
@@ -29,9 +29,70 @@
     display: flex;
     gap: var(--space-3);
     align-items: center;
+    flex-wrap: wrap;
 }
 
-/* Filter Bar */
+/* ── Summary Bar (same pattern as Dashboard stats-grid) ── */
+.summaryBar {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-5);
+    margin-bottom: var(--space-5);
+}
+
+.summaryItem {
+    background: var(--color-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    padding: var(--space-5);
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    box-shadow: var(--shadow-card);
+    transition: transform 0.2s, box-shadow 0.2s;
+    min-width: 0;
+}
+
+.summaryItem:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.summaryIcon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.summaryInfo {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.summaryLabel {
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.summaryValue {
+    font-family: var(--font-heading);
+    font-size: var(--text-xl);
+    font-weight: 700;
+    line-height: 1.2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ── Filter Bar ── */
 .filterBar {
     background: var(--color-card);
     border: 1px solid var(--color-border);
@@ -70,6 +131,8 @@
     background: var(--color-card);
     outline: none;
     transition: border-color 0.15s;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .filterGroup input:focus,
@@ -97,6 +160,9 @@
     font-family: var(--font-body);
     transition: all 0.15s;
     white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
 }
 
 .clearBtn:hover {
@@ -104,49 +170,7 @@
     color: var(--color-text-secondary);
 }
 
-/* Summary Bar */
-.summaryBar {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--space-4);
-    margin-bottom: var(--space-5);
-}
-
-.summaryItem {
-    background: var(--color-card);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    padding: var(--space-4) var(--space-5);
-    display: flex;
-    align-items: center;
-    gap: var(--space-3);
-}
-
-.summaryIcon {
-    width: 40px;
-    height: 40px;
-    border-radius: var(--radius-md);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.summaryLabel {
-    font-size: var(--text-xs);
-    color: var(--color-text-muted);
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-}
-
-.summaryValue {
-    font-family: var(--font-heading);
-    font-size: var(--text-lg);
-    font-weight: 700;
-}
-
-/* Table Card */
+/* ── Table Card ── */
 .tableCard {
     background: var(--color-card);
     border: 1px solid var(--color-border);
@@ -174,20 +198,23 @@
 
 .tableScroll {
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
-/* Amount Cell */
+/* ── Amount Cell ── */
 .amountIncome {
     color: #16A34A;
     font-weight: 600;
+    white-space: nowrap;
 }
 
 .amountExpense {
     color: #EF4444;
     font-weight: 600;
+    white-space: nowrap;
 }
 
-/* Actions Cell */
+/* ── Actions Cell ── */
 .actions {
     display: flex;
     gap: var(--space-2);
@@ -219,7 +246,7 @@
     background: #F5F3FF;
 }
 
-/* Empty State */
+/* ── Empty State ── */
 .emptyState {
     padding: var(--space-16) var(--space-6);
     text-align: center;
@@ -243,7 +270,7 @@
     margin-bottom: var(--space-6);
 }
 
-/* Loading */
+/* ── Loading ── */
 .loading {
     padding: var(--space-16);
     display: flex;
@@ -266,7 +293,7 @@
     }
 }
 
-/* Delete Modal */
+/* ── Delete Modal ── */
 .modalOverlay {
     position: fixed;
     inset: 0;
@@ -275,6 +302,7 @@
     align-items: center;
     justify-content: center;
     z-index: 100;
+    padding: var(--space-4);
     animation: fadeIn 0.15s ease;
 }
 
@@ -283,7 +311,7 @@
     border-radius: var(--radius-xl);
     padding: var(--space-8);
     max-width: 420px;
-    width: 90%;
+    width: 100%;
     box-shadow: var(--shadow-xl);
     text-align: center;
 }
@@ -358,12 +386,148 @@
     }
 }
 
+/* ═══════════════════════════════════════
+   RESPONSIVE — same breakpoint pattern
+   as Dashboard Overview page
+   ═══════════════════════════════════════ */
+
+/* ── Tablet (≤1024px) ── */
+@media (max-width: 1024px) {
+    .summaryBar {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* ── Mobile (≤768px) ── */
 @media (max-width: 768px) {
     .summaryBar {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--space-3);
+    }
+
+    .summaryItem {
+        padding: var(--space-4);
+        gap: var(--space-3);
+    }
+
+    .summaryIcon {
+        width: 40px;
+        height: 40px;
+    }
+
+    .summaryValue {
+        font-size: var(--text-lg);
     }
 
     .filterBar {
         flex-direction: column;
+        padding: var(--space-3);
+        gap: var(--space-3);
+    }
+
+    .filterGroup {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .searchGroup {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .clearBtn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .header {
+        flex-direction: column;
+        gap: var(--space-3);
+        margin-bottom: var(--space-4);
+    }
+
+    .tableInfo {
+        padding: var(--space-3) var(--space-4);
+    }
+
+    .modal {
+        padding: var(--space-6);
+    }
+
+    .modalActions {
+        flex-direction: column;
+    }
+
+    .cancelBtn,
+    .confirmDeleteBtn {
+        width: 100%;
+    }
+
+    .emptyState {
+        padding: var(--space-8) var(--space-4);
+    }
+}
+
+/* ── Small Mobile (≤480px) — matches Dashboard's 480px breakpoint ── */
+@media (max-width: 480px) {
+    .summaryBar {
+        grid-template-columns: 1fr;
+        gap: var(--space-3);
+        margin-bottom: var(--space-4);
+    }
+
+    .summaryValue {
+        font-size: var(--text-base);
+    }
+
+    .headerLeft h2 {
+        font-size: var(--text-xl);
+    }
+
+    .headerLeft p {
+        font-size: var(--text-xs);
+    }
+
+    .filterGroup label {
+        font-size: 10px;
+    }
+
+    .filterGroup input,
+    .filterGroup select {
+        padding: 6px 10px;
+        font-size: var(--text-xs);
+    }
+
+    .clearBtn {
+        padding: 6px 12px;
+        font-size: var(--text-xs);
+    }
+
+    .tableCard {
+        border-radius: var(--radius-lg);
+    }
+
+    .tableInfo {
+        padding: var(--space-2) var(--space-3);
+    }
+
+    .tableCount {
+        font-size: var(--text-xs);
+    }
+
+    .modal {
+        padding: var(--space-5);
+    }
+
+    .modal h3 {
+        font-size: var(--text-base);
+    }
+
+    .emptyState h3 {
+        font-size: var(--text-base);
+    }
+
+    .loading {
+        padding: var(--space-8);
     }
 }

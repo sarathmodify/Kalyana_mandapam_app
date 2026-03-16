@@ -126,7 +126,7 @@
     outline: none;
     transition: border-color 0.15s;
     cursor: pointer;
-    appearance: auto;
+    box-sizing: border-box;
 }
 
 .select:focus {
@@ -147,6 +147,7 @@
     resize: vertical;
     min-height: 80px;
     transition: border-color 0.15s;
+    box-sizing: border-box;
 }
 
 .textarea:focus {
@@ -205,8 +206,36 @@
     }
 }
 
+/* ═══ Mobile ═══ */
 @media (max-width: 640px) {
+    .page {
+        max-width: 100%;
+    }
+
     .row {
         grid-template-columns: 1fr;
+    }
+
+    .card {
+        padding: var(--space-4);
+    }
+
+    .header h2 {
+        font-size: var(--text-xl);
+    }
+
+    .formActions {
+        flex-direction: column-reverse;
+    }
+
+    .formActions a,
+    .formActions button {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+    }
+
+    .submitBtn {
+        min-width: 0;
     }
 }

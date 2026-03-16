@@ -1,12 +1,13 @@
 "use client";
 
-import { Bell, Search } from "lucide-react";
+import { Menu } from "lucide-react";
 import { usePathname } from "next/navigation";
 import styles from "./TopNavbar.module.css";
 
 interface TopNavbarProps {
     userName?: string;
     userRole?: string;
+    onMenuClick?: () => void;
 }
 
 const PAGE_TITLES: Record<string, string> = {
@@ -17,7 +18,7 @@ const PAGE_TITLES: Record<string, string> = {
     "/dashboard/users": "User Management",
 };
 
-export default function TopNavbar({ userName, userRole }: TopNavbarProps) {
+export default function TopNavbar({ userName, userRole, onMenuClick }: TopNavbarProps) {
     const pathname = usePathname();
 
     const getTitle = () => {
@@ -27,25 +28,19 @@ export default function TopNavbar({ userName, userRole }: TopNavbarProps) {
 
     return (
         <header className={styles.topnav}>
-            <div>
+            <div className={styles.left}>
+                <button
+                    className={styles.menuBtn}
+                    onClick={onMenuClick}
+                    title="Open menu"
+                    aria-label="Open navigation menu"
+                >
+                    <Menu size={22} />
+                </button>
                 <h1 className={styles.title}>{getTitle()}</h1>
             </div>
 
             <div className={styles.right}>
-                <div className={styles.search}>
-                    <Search size={16} className={styles.searchIcon} />
-                    <input
-                        type="text"
-                        placeholder="Search..."
-                        className={styles.searchInput}
-                    />
-                </div>
-
-                <button className={styles.notification} title="Notifications">
-                    <Bell size={20} />
-                    <span className={styles.notificationDot}></span>
-                </button>
-
                 <div className={styles.user}>
                     <div className={styles.userAvatar}>
                         {userName?.charAt(0)?.toUpperCase() || "U"}

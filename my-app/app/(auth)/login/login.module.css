@@ -207,4 +207,17 @@
     .brandPanel {
         display: none;
     }
+
+    .loginContainer {
+        min-height: auto;
+        border-radius: var(--radius-xl);
+    }
+
+    .formPanel {
+        padding: var(--space-6);
+    }
+
+    .formWrapper {
+        max-width: 100%;
+    }
 }

@@ -113,8 +113,8 @@ export default function UsersClient({ staffList, currentUserId }: Props) {
             <div className={styles.infoBanner}>
                 <Shield size={16} color="#1E40AF" />
                 <span>
-                    <strong>Admin</strong> — full access: create, edit, delete entries, manage bookings &amp; users.&nbsp;
-                    <strong>Viewer</strong> — read-only: can view ledger, bookings, and reports but cannot make changes.
+                    <strong>Admin</strong> — full access: create, edit, delete ledger entries, manage reports &amp; users.&nbsp;
+                    <strong>Viewer</strong> — read-only: can view ledger and reports but cannot make changes.
                 </span>
             </div>
 

@@ -17,10 +17,21 @@
     flex: 1;
     padding: var(--space-6);
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 @media (max-width: 768px) {
     .main {
         margin-left: 0;
+    }
+
+    .content {
+        padding: var(--space-4);
+    }
+}
+
+@media (max-width: 580px) {
+    .content {
+        padding: var(--space-3);
     }
 }

@@ -4,12 +4,13 @@ import {
     TrendingUp,
     TrendingDown,
     Wallet,
+    FileText,
 } from "lucide-react";
 
 export default async function DashboardPage() {
     const supabase = await createClient();
 
-    // Fetch all data in parallel
+    // Fetch all ledger data in parallel
     const [
         { data: ledgerEntries },
         { data: recentLedger },
@@ -21,7 +22,7 @@ export default async function DashboardPage() {
             .from("ledger_entries")
             .select("*")
             .order("date", { ascending: false })
-            .limit(5),
+            .limit(10),
     ]);
 
     // Calculate totals
@@ -36,6 +37,7 @@ export default async function DashboardPage() {
             .reduce((sum, e) => sum + Number(e.amount), 0) || 0;
 
     const netBalance = totalIncome - totalExpenses;
+    const totalEntries = ledgerEntries?.length || 0;
 
     const stats = [
         {
@@ -58,6 +60,13 @@ export default async function DashboardPage() {
             icon: Wallet,
             color: "#1E40AF",
             bg: "#EFF6FF",
+        },
+        {
+            label: "Total Entries",
+            value: totalEntries.toString(),
+            icon: FileText,
+            color: "#9333EA",
+            bg: "#FAF5FF",
         },
     ];
 
@@ -89,9 +98,8 @@ export default async function DashboardPage() {
                 })}
             </div>
 
-            {/* Recent Data Section */}
-            <div className="recent-grid">
-                {/* Recent Ledger Entries */}
+            {/* Recent Ledger Entries */}
+            <div className="recent-section">
                 <div className="recent-card">
                     <div className="recent-header">
                         <h3>Recent Ledger Entries</h3>
@@ -100,32 +108,36 @@ export default async function DashboardPage() {
                         </a>
                     </div>
                     {recentLedger && recentLedger.length > 0 ? (
-                        <table className="km-table">
-                            <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Description</th>
-                                    <th>Amount</th>
-                                    <th>Type</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {recentLedger.map((entry) => (
-                                    <tr key={entry.id}>
-                                        <td>{formatDate(entry.date)}</td>
-                                        <td>{entry.description}</td>
-                                        <td>{formatCurrency(Number(entry.amount))}</td>
-                                        <td>
-                                            <span
-                                                className={`km-badge ${entry.type === "income" ? "km-badge-success" : "km-badge-error"}`}
-                                            >
-                                                {entry.type}
-                                            </span>
-                                        </td>
+                        <div className="recent-table-scroll">
+                            <table className="km-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Description</th>
+                                        <th>Category</th>
+                                        <th>Amount</th>
+                                        <th>Type</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {recentLedger.map((entry) => (
+                                        <tr key={entry.id}>
+                                            <td style={{ whiteSpace: "nowrap" }}>{formatDate(entry.date)}</td>
+                                            <td>{entry.description}</td>
+                                            <td>{entry.category || "—"}</td>
+                                            <td style={{ whiteSpace: "nowrap" }}>{formatCurrency(Number(entry.amount))}</td>
+                                            <td>
+                                                <span
+                                                    className={`km-badge ${entry.type === "income" ? "km-badge-success" : "km-badge-error"}`}
+                                                >
+                                                    {entry.type}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     ) : (
                         <div className="empty-state">
                             <p>No ledger entries yet</p>
@@ -171,6 +183,7 @@ export default async function DashboardPage() {
                 .stat-info {
                     display: flex;
                     flex-direction: column;
+                    min-width: 0;
                 }
                 .stat-label {
                     font-size: var(--text-xs);
@@ -184,8 +197,11 @@ export default async function DashboardPage() {
                     font-size: var(--text-xl);
                     font-weight: 700;
                     line-height: 1.2;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
                 }
-                .recent-grid {
+                .recent-section {
                     display: grid;
                     grid-template-columns: 1fr;
                     gap: var(--space-5);
@@ -202,6 +218,8 @@ export default async function DashboardPage() {
                     justify-content: space-between;
                     align-items: center;
                     padding: var(--space-5) var(--space-5) var(--space-3);
+                    gap: var(--space-3);
+                    flex-wrap: wrap;
                 }
                 .recent-header h3 {
                     font-family: var(--font-heading);
@@ -214,9 +232,14 @@ export default async function DashboardPage() {
                     color: var(--color-primary);
                     font-weight: 500;
                     text-decoration: none;
+                    white-space: nowrap;
                 }
                 .recent-link:hover {
                     color: var(--color-primary-light);
+                }
+                .recent-table-scroll {
+                    overflow-x: auto;
+                    -webkit-overflow-scrolling: touch;
                 }
                 .empty-state {
                     padding: var(--space-10);
@@ -230,13 +253,32 @@ export default async function DashboardPage() {
                     .stats-grid {
                         grid-template-columns: repeat(2, 1fr);
                     }
-                    .recent-grid {
-                        grid-template-columns: 1fr;
+                }
+                @media (max-width: 768px) {
+                    .stats-grid {
+                        grid-template-columns: repeat(2, 1fr);
+                        gap: var(--space-3);
+                    }
+                    .stat-card {
+                        padding: var(--space-4);
+                        gap: var(--space-3);
+                    }
+                    .stat-icon-wrap {
+                        width: 40px;
+                        height: 40px;
+                    }
+                    .stat-value {
+                        font-size: var(--text-lg);
                     }
                 }
-                @media (max-width: 640px) {
+                @media (max-width: 480px) {
                     .stats-grid {
                         grid-template-columns: 1fr;
+                        gap: var(--space-3);
+                        margin-bottom: var(--space-5);
+                    }
+                    .stat-value {
+                        font-size: var(--text-base);
                     }
                 }
             `}</style>
