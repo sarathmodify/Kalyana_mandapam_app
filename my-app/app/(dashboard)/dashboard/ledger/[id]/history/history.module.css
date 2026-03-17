@@ -246,6 +246,13 @@
     }
 }
 
+@media (max-width: 768px) {
+    .page {
+        max-width: 100%;
+        padding: 0 var(--space-2);
+    }
+}
+
 @media (max-width: 640px) {
     .page {
         max-width: 100%;
